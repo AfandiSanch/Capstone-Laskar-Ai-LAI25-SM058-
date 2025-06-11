@@ -164,37 +164,25 @@ def load_model():
             st.info("🔄 Loading trained model...")
             model = tf.keras.models.load_model(model_path)
             
-            st.markdown("""
+            # Display model architecture info
+            st.markdown(f"""
             <div class="success-box">
-                ✅ <strong>Success!</strong> Your trained model has been loaded successfully.
+                ✅ <strong>Success!</strong> Your trained model has been loaded successfully.<br>
+                <strong>Model Summary:</strong><br>
+                - Total parameters: {model.count_params():,}<br>
+                - Input shape: {model.input_shape}<br>
+                - Output classes: {model.output_shape[-1]}
             </div>
             """, unsafe_allow_html=True)
             
             return model
         else:
-            st.warning("⚠️ Using demo model architecture. Please ensure sequential.h5 is available.")
-            
-            # Fallback: Create demo model with same architecture (5 classes instead of 6)
-            model = tf.keras.Sequential([
-                tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(224, 224, 3)),
-                tf.keras.layers.MaxPooling2D(2, 2),
-                tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
-                tf.keras.layers.MaxPooling2D(2, 2),
-                tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(128, activation='relu'),
-                tf.keras.layers.Dense(5, activation='softmax')  # Changed from 6 to 5 classes
-            ])
-            
-            model.compile(
-                optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),
-                loss='sparse_categorical_crossentropy',
-                metrics=['accuracy']
-            )
-            
-            return model
+            st.warning("⚠️ Model file not available. Please ensure sequential.h5 is downloaded.")
+            return None
             
     except Exception as e:
         st.error(f"Error loading model: {e}")
+        st.error("Please check if the model file is compatible and properly trained.")
         return None
 
 def preprocess_image(image):
@@ -225,21 +213,38 @@ def preprocess_image(image):
 def predict_image(model, image_array):
     """Make prediction on the preprocessed image."""
     try:
-        if model is None or image_array is None:
-            # Return random probabilities for demo (5 classes instead of 6)
-            predictions = np.random.rand(5)
-            predictions = predictions / np.sum(predictions)
-            return predictions
+        if model is None:
+            st.error("Model not loaded. Cannot make predictions.")
+            return None
+            
+        if image_array is None:
+            st.error("Image preprocessing failed. Cannot make predictions.")
+            return None
         
         # Make actual prediction
+        st.info(f"Making prediction with input shape: {image_array.shape}")
         predictions = model.predict(image_array, verbose=0)
-        return predictions[0]
+        
+        # Ensure we have the right number of classes
+        if len(predictions[0]) == 5:
+            return predictions[0]
+        else:
+            st.warning(f"Model output has {len(predictions[0])} classes, expected 5")
+            return predictions[0]
+            
     except Exception as e:
         st.error(f"Error making prediction: {e}")
-        # Return random probabilities as fallback (5 classes instead of 6)
-        predictions = np.random.rand(5)
-        predictions = predictions / np.sum(predictions)
-        return predictions
+        st.error("This usually indicates an architecture mismatch between the saved model and expected input.")
+        
+        # Provide debugging information
+        if model is not None:
+            st.error(f"Model input shape: {model.input_shape}")
+            st.error(f"Model output shape: {model.output_shape}")
+            
+        if image_array is not None:
+            st.error(f"Input array shape: {image_array.shape}")
+            
+        return None
 
 # Class information based on your notebook data (removed trash class)
 CLASS_INFO = {
@@ -277,6 +282,28 @@ CLASS_INFO = {
 
 # Updated class names (removed trash)
 CLASS_NAMES = ['cardboard', 'glass', 'metal', 'paper', 'plastic']
+
+# Function to inspect model architecture
+def inspect_model(model):
+    """Display model architecture information for debugging."""
+    if model is not None:
+        st.markdown("### 🔍 Model Architecture Debug Info")
+        
+        # Create a summary
+        summary_list = []
+        model.summary(print_fn=lambda x: summary_list.append(x))
+        summary_text = '\n'.join(summary_list)
+        
+        st.code(summary_text, language='text')
+        
+        # Show layer details
+        st.markdown("#### Layer Details:")
+        for i, layer in enumerate(model.layers):
+            st.write(f"**Layer {i+1}**: {layer.name} ({type(layer).__name__})")
+            if hasattr(layer, 'output_shape'):
+                st.write(f"  - Output shape: {layer.output_shape}")
+            if hasattr(layer, 'input_shape'):
+                st.write(f"  - Input shape: {layer.input_shape}")
 
 # Main app
 def main():
@@ -327,12 +354,11 @@ def main():
         st.info("""
         **CNN Model Details:**
         - Input: 224×224×3 RGB images
-        - Conv2D layers: 32, 64 filters
-        - MaxPooling2D layers
-        - Dense layers: 128, 5 neurons (recyclable materials)
-        - Optimizer: Adam (lr=0.0005)
+        - Conv2D layers with MaxPooling
+        - Dense layers for classification
+        - Output: 5 classes (recyclable materials)
+        - Optimizer: Adam
         - Loss: Sparse Categorical Crossentropy
-        - Data Split: 80% train, 20% validation
         """)
         
         st.markdown("### 🔧 Data Augmentation")
@@ -347,12 +373,18 @@ def main():
         """)
         
         st.markdown("---")
-        st.markdown("### 📥 Model Download")
+        st.markdown("### 📥 Model Management")
         if st.button("🔄 Re-download Model"):
             if os.path.exists("sequential.h5"):
                 os.remove("sequential.h5")
             st.cache_resource.clear()
             st.rerun()
+            
+        # Debug mode
+        if st.checkbox("🔍 Debug Mode (Show Model Architecture)"):
+            st.session_state.debug_mode = True
+        else:
+            st.session_state.debug_mode = False
     
     # Main content
     col1, col2 = st.columns([1, 1])
@@ -378,28 +410,44 @@ def main():
             with st.spinner("Loading model..."):
                 model = load_model()
             
-            # Make prediction
-            with st.spinner("Analyzing image..."):
-                processed_image = preprocess_image(image)
-                predictions = predict_image(model, processed_image)
+            # Debug mode - show model architecture
+            if hasattr(st.session_state, 'debug_mode') and st.session_state.debug_mode:
+                if model is not None:
+                    inspect_model(model)
             
-            # Get top prediction
-            predicted_class_idx = np.argmax(predictions)
-            predicted_class = CLASS_NAMES[predicted_class_idx]
-            confidence = predictions[predicted_class_idx] * 100
-            
-            # Display main prediction
-            st.markdown(f"""
-            <div class="prediction-box">
-                <h2>♻️ Classification Result</h2>
-                <h1>{predicted_class.upper()}</h1>
-                <h3>Confidence: {confidence:.2f}%</h3>
-                <p>Recyclable Material Classification</p>
-            </div>
-            """, unsafe_allow_html=True)
+            if model is not None:
+                # Make prediction
+                with st.spinner("Analyzing image..."):
+                    processed_image = preprocess_image(image)
+                    predictions = predict_image(model, processed_image)
+                
+                if predictions is not None:
+                    # Ensure we have the right number of predictions
+                    if len(predictions) >= len(CLASS_NAMES):
+                        predictions = predictions[:len(CLASS_NAMES)]  # Take only first 5
+                    else:
+                        st.error(f"Model returned {len(predictions)} predictions, but we need {len(CLASS_NAMES)}")
+                        st.stop()
+                    
+                    # Get top prediction
+                    predicted_class_idx = np.argmax(predictions)
+                    predicted_class = CLASS_NAMES[predicted_class_idx]
+                    confidence = predictions[predicted_class_idx] * 100
+                    
+                    # Display main prediction
+                    st.markdown(f"""
+                    <div class="prediction-box">
+                        <h2>♻️ Classification Result</h2>
+                        <h1>{predicted_class.upper()}</h1>
+                        <h3>Confidence: {confidence:.2f}%</h3>
+                        <p>Recyclable Material Classification</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.error("Model could not be loaded. Please check the model file.")
     
     with col2:
-        if uploaded_file is not None:
+        if uploaded_file is not None and 'predictions' in locals() and predictions is not None:
             st.markdown('<div class="subheader">📈 Prediction Probabilities</div>', unsafe_allow_html=True)
             
             # Create probability dataframe
