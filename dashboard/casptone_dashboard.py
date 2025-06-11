@@ -721,112 +721,112 @@ def create_probability_charts(prob_df):
         st.plotly_chart(fig_donut, use_container_width=True)
 
 # def create_dataset_overview():
-    """Create modern dataset overview section."""
-    st.markdown("### 📊 Training Dataset Overview")
+#     """Create modern dataset overview section."""
+#     st.markdown("### 📊 Training Dataset Overview")
     
-    # Create dataset visualization
-    dataset_data = []
-    for cls, info in CLASS_INFO.items():
-        dataset_data.append({
-            'Material': cls.title(),
-            'Original': info['original_count'],
-            'Training': info['final_count'],
-            'Color': info['color'],
-            'Icon': info['icon']
-        })
+#     # Create dataset visualization
+#     dataset_data = []
+#     for cls, info in CLASS_INFO.items():
+#         dataset_data.append({
+#             'Material': cls.title(),
+#             'Original': info['original_count'],
+#             'Training': info['final_count'],
+#             'Color': info['color'],
+#             'Icon': info['icon']
+#         })
     
-    dataset_df = pd.DataFrame(dataset_data)
+#     dataset_df = pd.DataFrame(dataset_data)
     
-    # Modern grouped bar chart
-    fig = go.Figure()
+#     # Modern grouped bar chart
+#     fig = go.Figure()
     
-    fig.add_trace(go.Bar(
-        name='Original Dataset',
-        x=dataset_df['Material'],
-        y=dataset_df['Original'],
-        marker_color='rgba(102, 126, 234, 0.7)',
-        text=dataset_df['Original'],
-        textposition='outside'
-    ))
+#     fig.add_trace(go.Bar(
+#         name='Original Dataset',
+#         x=dataset_df['Material'],
+#         y=dataset_df['Original'],
+#         marker_color='rgba(102, 126, 234, 0.7)',
+#         text=dataset_df['Original'],
+#         textposition='outside'
+#     ))
     
-    fig.add_trace(go.Bar(
-        name='Training Set',
-        x=dataset_df['Material'],
-        y=dataset_df['Training'],
-        marker_color=[color for color in dataset_df['Color']],
-        text=dataset_df['Training'],
-        textposition='outside'
-    ))
+#     fig.add_trace(go.Bar(
+#         name='Training Set',
+#         x=dataset_df['Material'],
+#         y=dataset_df['Training'],
+#         marker_color=[color for color in dataset_df['Color']],
+#         text=dataset_df['Training'],
+#         textposition='outside'
+#     ))
     
-    fig.update_layout(
-        title=dict(
-            text="📈 Dataset Distribution: Original vs Training Split",
-            font=dict(size=20, family='Inter', color='#2c3e50')
-        ),
-        xaxis=dict(
-            title="Material Types",
-            titlefont=dict(size=14, family='Inter'),
-            tickfont=dict(size=12, family='Inter')
-        ),
-        yaxis=dict(
-            title="Number of Images",
-            titlefont=dict(size=14, family='Inter'),
-            tickfont=dict(size=12, family='Inter'),
-            gridcolor='rgba(0,0,0,0.1)'
-        ),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(family='Inter'),
-        barmode='group',
-        height=400,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        )
-    )
+#     fig.update_layout(
+#         title=dict(
+#             text="📈 Dataset Distribution: Original vs Training Split",
+#             font=dict(size=20, family='Inter', color='#2c3e50')
+#         ),
+#         xaxis=dict(
+#             title="Material Types",
+#             titlefont=dict(size=14, family='Inter'),
+#             tickfont=dict(size=12, family='Inter')
+#         ),
+#         yaxis=dict(
+#             title="Number of Images",
+#             titlefont=dict(size=14, family='Inter'),
+#             tickfont=dict(size=12, family='Inter'),
+#             gridcolor='rgba(0,0,0,0.1)'
+#         ),
+#         plot_bgcolor='rgba(0,0,0,0)',
+#         paper_bgcolor='rgba(0,0,0,0)',
+#         font=dict(family='Inter'),
+#         barmode='group',
+#         height=400,
+#         legend=dict(
+#             orientation="h",
+#             yanchor="bottom",
+#             y=1.02,
+#             xanchor="right",
+#             x=1
+#         )
+#     )
     
-    st.plotly_chart(fig, use_container_width=True)
+#     st.plotly_chart(fig, use_container_width=True)
     
-    # Dataset insights cards
-    col1, col2, col3, col4 = st.columns(4)
+#     # Dataset insights cards
+#     col1, col2, col3, col4 = st.columns(4)
     
-    total_original = sum(info['original_count'] for info in CLASS_INFO.values())
-    total_training = sum(info['final_count'] for info in CLASS_INFO.values())
+#     total_original = sum(info['original_count'] for info in CLASS_INFO.values())
+#     total_training = sum(info['final_count'] for info in CLASS_INFO.values())
     
-    with col1:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-value">{total_original:,}</div>
-            <div class="metric-label">Original Images</div>
-        </div>
-        """, unsafe_allow_html=True)
+#     with col1:
+#         st.markdown(f"""
+#         <div class="metric-card">
+#             <div class="metric-value">{total_original:,}</div>
+#             <div class="metric-label">Original Images</div>
+#         </div>
+#         """, unsafe_allow_html=True)
     
-    with col2:
-        st.markdown(f"""
-        <div class="metric-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-            <div class="metric-value">{total_training:,}</div>
-            <div class="metric-label">Training Images</div>
-        </div>
-        """, unsafe_allow_html=True)
+#     with col2:
+#         st.markdown(f"""
+#         <div class="metric-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+#             <div class="metric-value">{total_training:,}</div>
+#             <div class="metric-label">Training Images</div>
+#         </div>
+#         """, unsafe_allow_html=True)
     
-    with col3:
-        st.markdown(f"""
-        <div class="metric-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-            <div class="metric-value">80/20</div>
-            <div class="metric-label">Train/Test Split</div>
-        </div>
-        """, unsafe_allow_html=True)
+#     with col3:
+#         st.markdown(f"""
+#         <div class="metric-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+#             <div class="metric-value">80/20</div>
+#             <div class="metric-label">Train/Test Split</div>
+#         </div>
+#         """, unsafe_allow_html=True)
     
-    with col4:
-        st.markdown(f"""
-        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <div class="metric-value">5</div>
-            <div class="metric-label">Material Classes</div>
-        </div>
-        """, unsafe_allow_html=True)
+#     with col4:
+#         st.markdown(f"""
+#         <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+#             <div class="metric-value">5</div>
+#             <div class="metric-label">Material Classes</div>
+#         </div>
+#         """, unsafe_allow_html=True)
 
 def main():
     """Main application function with modern design."""
