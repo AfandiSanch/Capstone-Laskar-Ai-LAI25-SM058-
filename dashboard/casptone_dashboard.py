@@ -999,8 +999,8 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
                     """, unsafe_allow_html=True)
     
     # Dataset overview section
-    st.markdown("---")
-    create_dataset_overview()
+    # st.markdown("---")
+    # create_dataset_overview()
     
     # Training insights
     st.markdown("### 🎓 AI Training Insights")
