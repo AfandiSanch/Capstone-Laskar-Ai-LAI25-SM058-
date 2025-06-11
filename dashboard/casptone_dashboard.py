@@ -14,7 +14,7 @@ import gdown
 
 # Set page config
 st.set_page_config(
-    page_title="♻️ EcoClassify AI",
+    page_title="♻️ EcoSense",
     page_icon="♻️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -487,7 +487,7 @@ CLASS_NAMES = ['cardboard', 'glass', 'metal', 'paper', 'plastic']
 def create_modern_sidebar():
     """Create modern sidebar with enhanced visuals."""
     with st.sidebar:
-        st.markdown('<div class="sidebar-title">📊 EcoClassify AI Dashboard</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-title">📊 EcoSense Dashboard</div>', unsafe_allow_html=True)
         
         # Model status
         model_status = "sequential.h5" if os.path.exists("sequential.h5") else "not found"
