@@ -32,6 +32,7 @@ st.markdown("""
     }
     
     .main-container {
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         border-radius: 20px;
         padding: 2rem;
@@ -539,7 +540,7 @@ def create_modern_sidebar():
         st.markdown("---")
         
         # Model architecture info
-        st.markdown("### 🧠 AI Model Info")
+        st.markdown("### 🧠 Model Info")
         st.markdown("""
         <div class="data-insight">
             <h4 style="margin-top: 0; color: #667eea;">🔬 CNN Architecture</h4>
@@ -857,7 +858,7 @@ def main():
         <div class="upload-area">
             <h3 style="color: #667eea; margin-bottom: 1rem;">📸 Select Material Image</h3>
             <p style="margin-bottom: 1rem; color: #666;">
-                Upload a clear image of recyclable materials for AI classification
+                Upload a clear image of recyclable materials for classification
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -888,12 +889,12 @@ def main():
             st.markdown('</div>', unsafe_allow_html=True)
             
             # Processing info
-            st.info("🔄 Image will be automatically resized to 256×256 pixels and normalized for optimal AI processing")
+            st.info("🔄 Image will be automatically resized to 256×256 pixels and normalized for optimal processing")
     
     with col2:
         if uploaded_file is not None:
             # Load model and make prediction
-            with st.spinner("🧠 Loading AI model..."):
+            with st.spinner("🧠 Loading model..."):
                 model = load_model()
             
             if model is not None:
@@ -925,13 +926,13 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
                     # Display prediction result
                     prob_df = create_prediction_display(predicted_class, confidence, predictions)
             else:
-                st.error("❌ Could not load the AI model. Please check the model file.")
+                st.error("❌ Could not load the model. Please check the model file.")
         else:
             # Welcome message when no image is uploaded
             st.markdown("""
             <div class="modern-card" style="text-align: center; padding: 3rem 2rem;">
                 <div style="font-size: 4rem; margin-bottom: 1rem;">🤖</div>
-                <h3 style="color: #667eea; margin-bottom: 1rem;">AI Ready for Classification</h3>
+                <h3 style="color: #667eea; margin-bottom: 1rem;">Ready for Classification</h3>
                 <p style="color: #666; font-size: 1.1rem; margin-bottom: 2rem;">
                     Upload an image to get started with automatic recyclable material classification
                 </p>
@@ -990,7 +991,7 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
                         <h4 style="color: {class_info['color']}; margin-top: 0;">{class_name.title()} Details</h4>
                         <p><strong>Description:</strong> {class_info['description']}</p>
                         <p><strong>Recycling Tip:</strong> {class_info['tips']}</p>
-                        <p><strong>Training Data:</strong> {class_info['final_count']} images used for AI training</p>
+                        <p><strong>Training Data:</strong> {class_info['final_count']} images used for training</p>
                         <div class="progress-container">
                             <div class="progress-bar" style="width: {prob*100}%; background: {class_info['color']};"></div>
                         </div>
@@ -1002,7 +1003,7 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
     # create_dataset_overview()
     
     # Training insights
-    st.markdown("### 🎓 AI Training Insights")
+    st.markdown("### 🎓 Training Insights")
     
     col1, col2 = st.columns(2)
     
@@ -1048,7 +1049,7 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
                 <div style="opacity: 0.9;">Training Images</div>
             </div>
             <div style="text-align: center;">
-                <div style="font-size: 2rem; font-weight: 700;">99.2%</div>
+                <div style="font-size: 2rem; font-weight: 700;">98%</div>
                 <div style="opacity: 0.9;">Classification Accuracy</div>
             </div>
             <div style="text-align: center;">
