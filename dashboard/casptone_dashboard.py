@@ -988,7 +988,7 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
                 with col_b:
                     st.markdown(f"""
                     <div class="modern-card">
-                        <h4 style="color: {class_info['color']; margin-top: 0;">{class_name.title()} Details</h4>
+                        <h4 style="color: {class_info['color']}; margin-top: 0;">{class_name.title()} Details</h4>
                         <p><strong>Description:</strong> {class_info['description']}</p>
                         <p><strong>Recycling Tip:</strong> {class_info['tips']}</p>
                         <p><strong>Training Data:</strong> {class_info['final_count']} images used for AI training</p>
