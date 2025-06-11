@@ -7,6 +7,10 @@ import plotly.graph_objects as go
 from PIL import Image
 import io
 import cv2
+import requests
+import os
+from pathlib import Path
+import gdown
 
 # Set page config
 st.set_page_config(
@@ -58,35 +62,137 @@ st.markdown("""
         padding: 1rem;
         margin: 1rem 0;
     }
+    .success-box {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 5px;
+        padding: 1rem;
+        margin: 1rem 0;
+        color: #155724;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+def download_model_from_gdrive():
+    """Download model from Google Drive using multiple methods."""
+    
+    # Google Drive file ID extracted from your link
+    file_id = "1gMSisnKZeUxFovfI6t2Is-V77v0Jj03s"
+    model_path = "sequential.h5"
+    
+    # Check if model already exists
+    if os.path.exists(model_path):
+        return model_path
+    
+    try:
+        # Method 1: Using gdown (recommended)
+        st.info("📥 Downloading model from Google Drive... (first time only)")
+        progress_bar = st.progress(0)
+        
+        # Download using gdown
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, model_path, quiet=False)
+        
+        progress_bar.progress(100)
+        
+        if os.path.exists(model_path):
+            st.success(f"✅ Model downloaded successfully: {model_path}")
+            return model_path
+        else:
+            raise Exception("Download completed but file not found")
+            
+    except Exception as e:
+        st.error(f"Error with gdown method: {e}")
+        
+        try:
+            # Method 2: Direct download with requests
+            st.info("🔄 Trying alternative download method...")
+            
+            # Use direct download URL
+            download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+            
+            response = requests.get(download_url, stream=True)
+            
+            if response.status_code == 200:
+                total_size = int(response.headers.get('content-length', 0))
+                downloaded = 0
+                
+                with open(model_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if total_size > 0:
+                                progress = int((downloaded / total_size) * 100)
+                                progress_bar.progress(progress)
+                
+                progress_bar.progress(100)
+                st.success(f"✅ Model downloaded successfully: {model_path}")
+                return model_path
+            else:
+                raise Exception(f"HTTP {response.status_code}")
+                
+        except Exception as e2:
+            st.error(f"Error with requests method: {e2}")
+            
+            # Method 3: Manual instruction
+            st.markdown("""
+            <div class="warning-box">
+                ⚠️ <strong>Automatic download failed.</strong><br>
+                Please download the model manually:
+                <ol>
+                    <li>Go to: <a href="https://drive.google.com/file/d/1gMSisnKZeUxFovfI6t2Is-V77v0Jj03s/view?usp=sharing" target="_blank">Google Drive Link</a></li>
+                    <li>Click "Download"</li>
+                    <li>Save the file as "sequential.h5" in the same folder as this script</li>
+                    <li>Refresh this page</li>
+                </ol>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            return None
 
 # Cache the model loading
 @st.cache_resource
 def load_model():
-    """Load the trained model. Replace with your actual model path."""
+    """Load the trained model from Google Drive."""
     try:
-        # Try to load your trained model
-        # model = tf.keras.models.load_model('path_to_your_model.h5')
+        # First, try to download the model
+        model_path = download_model_from_gdrive()
         
-        # For demo purposes, create a model with same architecture as notebook
-        model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(224, 224, 3)),
-            tf.keras.layers.MaxPooling2D(2, 2),
-            tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
-            tf.keras.layers.MaxPooling2D(2, 2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Dense(6, activation='softmax')
-        ])
-        
-        model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),
-            loss='sparse_categorical_crossentropy',
-            metrics=['accuracy']
-        )
-        
-        return model
+        if model_path and os.path.exists(model_path):
+            # Load the actual trained model
+            st.info("🔄 Loading trained model...")
+            model = tf.keras.models.load_model(model_path)
+            
+            st.markdown("""
+            <div class="success-box">
+                ✅ <strong>Success!</strong> Your trained model has been loaded successfully.
+            </div>
+            """, unsafe_allow_html=True)
+            
+            return model
+        else:
+            st.warning("⚠️ Using demo model architecture. Please ensure sequential.h5 is available.")
+            
+            # Fallback: Create demo model with same architecture
+            model = tf.keras.Sequential([
+                tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(224, 224, 3)),
+                tf.keras.layers.MaxPooling2D(2, 2),
+                tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
+                tf.keras.layers.MaxPooling2D(2, 2),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(128, activation='relu'),
+                tf.keras.layers.Dense(6, activation='softmax')
+            ])
+            
+            model.compile(
+                optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),
+                loss='sparse_categorical_crossentropy',
+                metrics=['accuracy']
+            )
+            
+            return model
+            
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None
@@ -182,6 +288,22 @@ def main():
     # Header
     st.markdown('<div class="main-header">🗂️ Garbage Classification Dashboard</div>', unsafe_allow_html=True)
     
+    # Check model status
+    model_status = "sequential.h5" if os.path.exists("sequential.h5") else "not found"
+    
+    if model_status == "sequential.h5":
+        st.markdown("""
+        <div class="success-box">
+            ✅ <strong>Model Status:</strong> Your trained model (sequential.h5) is ready to use!
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="warning-box">
+            ⚠️ <strong>Model Status:</strong> Will attempt to download from Google Drive on first prediction.
+        </div>
+        """, unsafe_allow_html=True)
+    
     # Sidebar
     with st.sidebar:
         st.markdown("### 📊 Dataset Overview")
@@ -228,14 +350,14 @@ def main():
         - Vertical flipping
         - Warp shifting
         """)
-    
-    # Warning about demo model
-    st.markdown("""
-    <div class="warning-box">
-        ⚠️ <strong>Demo Notice:</strong> This is a demonstration using the model architecture from your notebook. 
-        To use your trained model, replace the model loading code with your actual saved model path.
-    </div>
-    """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        st.markdown("### 📥 Model Download")
+        if st.button("🔄 Re-download Model"):
+            if os.path.exists("sequential.h5"):
+                os.remove("sequential.h5")
+            st.cache_resource.clear()
+            st.rerun()
     
     # Main content
     col1, col2 = st.columns([1, 1])
