@@ -720,7 +720,7 @@ def create_probability_charts(prob_df):
         
         st.plotly_chart(fig_donut, use_container_width=True)
 
-def create_dataset_overview():
+# def create_dataset_overview():
     """Create modern dataset overview section."""
     st.markdown("### 📊 Training Dataset Overview")
     
