@@ -834,7 +834,7 @@ def main():
     # Hero Section
     st.markdown("""
     <div class="hero-header animate-fade-in">
-        <div class="hero-title">♻️ EcoClassify AI</div>
+        <div class="hero-title">♻️ EcoSense</div>
         <div class="hero-subtitle">Smart Recyclable Materials Classification</div>
         <div class="hero-description">
             Powered by Deep Learning • Trained on 2,000+ Images • 5 Material Categories
