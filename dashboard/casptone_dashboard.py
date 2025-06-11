@@ -174,7 +174,7 @@ def load_model():
         else:
             st.warning("⚠️ Using demo model architecture. Please ensure sequential.h5 is available.")
             
-            # Fallback: Create demo model with same architecture
+            # Fallback: Create demo model with same architecture (5 classes instead of 6)
             model = tf.keras.Sequential([
                 tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(224, 224, 3)),
                 tf.keras.layers.MaxPooling2D(2, 2),
@@ -182,7 +182,7 @@ def load_model():
                 tf.keras.layers.MaxPooling2D(2, 2),
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dense(128, activation='relu'),
-                tf.keras.layers.Dense(6, activation='softmax')
+                tf.keras.layers.Dense(5, activation='softmax')  # Changed from 6 to 5 classes
             ])
             
             model.compile(
@@ -226,8 +226,8 @@ def predict_image(model, image_array):
     """Make prediction on the preprocessed image."""
     try:
         if model is None or image_array is None:
-            # Return random probabilities for demo
-            predictions = np.random.rand(6)
+            # Return random probabilities for demo (5 classes instead of 6)
+            predictions = np.random.rand(5)
             predictions = predictions / np.sum(predictions)
             return predictions
         
@@ -236,12 +236,12 @@ def predict_image(model, image_array):
         return predictions[0]
     except Exception as e:
         st.error(f"Error making prediction: {e}")
-        # Return random probabilities as fallback
-        predictions = np.random.rand(6)
+        # Return random probabilities as fallback (5 classes instead of 6)
+        predictions = np.random.rand(5)
         predictions = predictions / np.sum(predictions)
         return predictions
 
-# Class information based on your notebook data
+# Class information based on your notebook data (removed trash class)
 CLASS_INFO = {
     'cardboard': {
         'original_count': 393, 
@@ -272,21 +272,16 @@ CLASS_INFO = {
         'augmented_count': 472,  # No augmentation for plastic
         'color': '#FF6347', 
         'description': 'Plastic bottles, containers, and plastic waste'
-    },
-    'trash': {
-        'original_count': 127, 
-        'augmented_count': 427,  # Augmented by 300 images
-        'color': '#696969', 
-        'description': 'General waste and non-recyclable trash'
     }
 }
 
-CLASS_NAMES = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
+# Updated class names (removed trash)
+CLASS_NAMES = ['cardboard', 'glass', 'metal', 'paper', 'plastic']
 
 # Main app
 def main():
     # Header
-    st.markdown('<div class="main-header">🗂️ Garbage Classification Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">🗂️ Recyclable Materials Classification Dashboard</div>', unsafe_allow_html=True)
     
     # Check model status
     model_status = "sequential.h5" if os.path.exists("sequential.h5") else "not found"
@@ -308,8 +303,8 @@ def main():
     with st.sidebar:
         st.markdown("### 📊 Dataset Overview")
         st.markdown('<div class="class-info">', unsafe_allow_html=True)
-        st.markdown("**Garbage Classification Dataset**")
-        st.markdown("Contains 6 classifications with data augmentation:")
+        st.markdown("**Recyclable Materials Classification Dataset**")
+        st.markdown("Contains 5 recyclable material classifications with data augmentation:")
         
         total_original = sum(info['original_count'] for info in CLASS_INFO.values())
         total_augmented = sum(info['augmented_count'] for info in CLASS_INFO.values())
@@ -334,7 +329,7 @@ def main():
         - Input: 224×224×3 RGB images
         - Conv2D layers: 32, 64 filters
         - MaxPooling2D layers
-        - Dense layers: 128, 6 neurons
+        - Dense layers: 128, 5 neurons (recyclable materials)
         - Optimizer: Adam (lr=0.0005)
         - Loss: Sparse Categorical Crossentropy
         - Data Split: 80% train, 20% validation
@@ -342,7 +337,7 @@ def main():
         
         st.markdown("### 🔧 Data Augmentation")
         st.info("""
-        **Applied to metal, paper, trash:**
+        **Applied to metal and paper:**
         - Rotation (clockwise/anticlockwise)
         - Brightness adjustment
         - Gaussian blur
@@ -368,7 +363,7 @@ def main():
         uploaded_file = st.file_uploader(
             "Choose an image file",
             type=['png', 'jpg', 'jpeg'],
-            help="Upload an image of garbage to classify (will be resized to 224×224)"
+            help="Upload an image of recyclable materials to classify (will be resized to 224×224)"
         )
         
         if uploaded_file is not None:
@@ -396,10 +391,10 @@ def main():
             # Display main prediction
             st.markdown(f"""
             <div class="prediction-box">
-                <h2>🎯 Prediction</h2>
+                <h2>♻️ Classification Result</h2>
                 <h1>{predicted_class.upper()}</h1>
                 <h3>Confidence: {confidence:.2f}%</h3>
-                <p>Model processed 224×224 normalized image</p>
+                <p>Recyclable Material Classification</p>
             </div>
             """, unsafe_allow_html=True)
     
@@ -422,12 +417,12 @@ def main():
                 color='Color',
                 color_discrete_map={color: color for color in prob_df['Color']},
                 title="Class Probabilities (%)",
-                labels={'Probability': 'Probability (%)', 'Class': 'Garbage Class'},
+                labels={'Probability': 'Probability (%)', 'Class': 'Material Type'},
                 orientation='h'
             )
             fig_bar.update_layout(
                 showlegend=False,
-                height=400,
+                height=350,
                 xaxis_range=[0, 100]
             )
             st.plotly_chart(fig_bar, use_container_width=True)
@@ -467,8 +462,8 @@ def main():
                         # Progress bar
                         st.progress(float(prob))
         else:
-            st.markdown('<div class="subheader">👆 Upload an image to see predictions</div>', unsafe_allow_html=True)
-            st.info("Please upload an image file (PNG, JPG, or JPEG) to get started with garbage classification.")
+            st.markdown('<div class="subheader">👆 Upload an image to see classification</div>', unsafe_allow_html=True)
+            st.info("Please upload an image file (PNG, JPG, or JPEG) to get started with recyclable materials classification.")
             
             # Dataset visualization
             st.markdown("### 📊 Training Dataset Distribution")
@@ -522,8 +517,8 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #666; padding: 1rem;'>
-        <p>🌱 Garbage Classification Dashboard | Built with Streamlit & TensorFlow</p>
-        <p>Model Architecture: CNN with 224×224 input | Data Augmentation Applied ♻️</p>
+        <p>♻️ Recyclable Materials Classification Dashboard | Built with Streamlit & TensorFlow</p>
+        <p>Model Architecture: CNN with 224×224 input | 5 Recyclable Material Classes | Data Augmentation Applied 🌱</p>
     </div>
     """, unsafe_allow_html=True)
 
