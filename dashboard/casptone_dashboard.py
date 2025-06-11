@@ -32,7 +32,6 @@ st.markdown("""
     }
     
     .main-container {
-        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         border-radius: 20px;
         padding: 2rem;
