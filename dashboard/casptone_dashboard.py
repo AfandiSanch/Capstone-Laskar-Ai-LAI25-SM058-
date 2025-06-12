@@ -38,6 +38,7 @@ st.markdown("""
         padding: 2rem;
         margin: 1rem;
         box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        color: #2c3e50; /* --- PERUBAHAN: Menetapkan warna teks default yang gelap untuk semua konten utama --- */
     }
     
     .hero-header {
@@ -78,6 +79,7 @@ st.markdown("""
         border: 1px solid rgba(0,0,0,0.05);
         margin-bottom: 1rem;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        color: #333; /* --- PERUBAHAN: Memastikan teks di kartu putih selalu gelap --- */
     }
     
     .modern-card:hover {
@@ -164,6 +166,7 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
         margin: 1rem 0;
         transition: all 0.3s ease;
+        color: #2c3e50; /* --- PERUBAHAN: Menetapkan warna teks gelap untuk area upload --- */
     }
     
     .upload-area:hover {
@@ -215,6 +218,7 @@ st.markdown("""
         margin: 1rem 0;
         border-left: 4px solid #667eea;
         box-shadow: 0 8px 25px rgba(168, 237, 234, 0.3);
+        color: #2c3e50; /* --- PERUBAHAN: Ini sangat penting, karena background sangat terang --- */
     }
     
     .footer-stats {
@@ -259,6 +263,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
 
 def download_model_from_gdrive():
     """Download model from Google Drive using multiple methods."""
@@ -720,113 +725,113 @@ def create_probability_charts(prob_df):
         
         st.plotly_chart(fig_donut, use_container_width=True)
 
-# def create_dataset_overview():
-#     """Create modern dataset overview section."""
-#     st.markdown("### 📊 Training Dataset Overview")
+def create_dataset_overview():
+    """Create modern dataset overview section."""
+    st.markdown("### 📊 Training Dataset Overview")
     
-#     # Create dataset visualization
-#     dataset_data = []
-#     for cls, info in CLASS_INFO.items():
-#         dataset_data.append({
-#             'Material': cls.title(),
-#             'Original': info['original_count'],
-#             'Training': info['final_count'],
-#             'Color': info['color'],
-#             'Icon': info['icon']
-#         })
+    # Create dataset visualization
+    dataset_data = []
+    for cls, info in CLASS_INFO.items():
+        dataset_data.append({
+            'Material': cls.title(),
+            'Original': info['original_count'],
+            'Training': info['final_count'],
+            'Color': info['color'],
+            'Icon': info['icon']
+        })
     
-#     dataset_df = pd.DataFrame(dataset_data)
+    dataset_df = pd.DataFrame(dataset_data)
     
-#     # Modern grouped bar chart
-#     fig = go.Figure()
+    # Modern grouped bar chart
+    fig = go.Figure()
     
-#     fig.add_trace(go.Bar(
-#         name='Original Dataset',
-#         x=dataset_df['Material'],
-#         y=dataset_df['Original'],
-#         marker_color='rgba(102, 126, 234, 0.7)',
-#         text=dataset_df['Original'],
-#         textposition='outside'
-#     ))
+    fig.add_trace(go.Bar(
+        name='Original Dataset',
+        x=dataset_df['Material'],
+        y=dataset_df['Original'],
+        marker_color='rgba(102, 126, 234, 0.7)',
+        text=dataset_df['Original'],
+        textposition='outside'
+    ))
     
-#     fig.add_trace(go.Bar(
-#         name='Training Set',
-#         x=dataset_df['Material'],
-#         y=dataset_df['Training'],
-#         marker_color=[color for color in dataset_df['Color']],
-#         text=dataset_df['Training'],
-#         textposition='outside'
-#     ))
+    fig.add_trace(go.Bar(
+        name='Training Set',
+        x=dataset_df['Material'],
+        y=dataset_df['Training'],
+        marker_color=[color for color in dataset_df['Color']],
+        text=dataset_df['Training'],
+        textposition='outside'
+    ))
     
-#     fig.update_layout(
-#         title=dict(
-#             text="📈 Dataset Distribution: Original vs Training Split",
-#             font=dict(size=20, family='Inter', color='#2c3e50')
-#         ),
-#         xaxis=dict(
-#             title="Material Types",
-#             titlefont=dict(size=14, family='Inter'),
-#             tickfont=dict(size=12, family='Inter')
-#         ),
-#         yaxis=dict(
-#             title="Number of Images",
-#             titlefont=dict(size=14, family='Inter'),
-#             tickfont=dict(size=12, family='Inter'),
-#             gridcolor='rgba(0,0,0,0.1)'
-#         ),
-#         plot_bgcolor='rgba(0,0,0,0)',
-#         paper_bgcolor='rgba(0,0,0,0)',
-#         font=dict(family='Inter'),
-#         barmode='group',
-#         height=400,
-#         legend=dict(
-#             orientation="h",
-#             yanchor="bottom",
-#             y=1.02,
-#             xanchor="right",
-#             x=1
-#         )
-#     )
+    fig.update_layout(
+        title=dict(
+            text="📈 Dataset Distribution: Original vs Training Split",
+            font=dict(size=20, family='Inter', color='#2c3e50')
+        ),
+        xaxis=dict(
+            title="Material Types",
+            titlefont=dict(size=14, family='Inter'),
+            tickfont=dict(size=12, family='Inter')
+        ),
+        yaxis=dict(
+            title="Number of Images",
+            titlefont=dict(size=14, family='Inter'),
+            tickfont=dict(size=12, family='Inter'),
+            gridcolor='rgba(0,0,0,0.1)'
+        ),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(family='Inter'),
+        barmode='group',
+        height=400,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
     
-#     st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
     
-#     # Dataset insights cards
-#     col1, col2, col3, col4 = st.columns(4)
+    # Dataset insights cards
+    col1, col2, col3, col4 = st.columns(4)
     
-#     total_original = sum(info['original_count'] for info in CLASS_INFO.values())
-#     total_training = sum(info['final_count'] for info in CLASS_INFO.values())
+    total_original = sum(info['original_count'] for info in CLASS_INFO.values())
+    total_training = sum(info['final_count'] for info in CLASS_INFO.values())
     
-#     with col1:
-#         st.markdown(f"""
-#         <div class="metric-card">
-#             <div class="metric-value">{total_original:,}</div>
-#             <div class="metric-label">Original Images</div>
-#         </div>
-#         """, unsafe_allow_html=True)
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{total_original:,}</div>
+            <div class="metric-label">Original Images</div>
+        </div>
+        """, unsafe_allow_html=True)
     
-#     with col2:
-#         st.markdown(f"""
-#         <div class="metric-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-#             <div class="metric-value">{total_training:,}</div>
-#             <div class="metric-label">Training Images</div>
-#         </div>
-#         """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="metric-value">{total_training:,}</div>
+            <div class="metric-label">Training Images</div>
+        </div>
+        """, unsafe_allow_html=True)
     
-#     with col3:
-#         st.markdown(f"""
-#         <div class="metric-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-#             <div class="metric-value">80/20</div>
-#             <div class="metric-label">Train/Test Split</div>
-#         </div>
-#         """, unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"""
+        <div class="metric-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <div class="metric-value">80/20</div>
+            <div class="metric-label">Train/Test Split</div>
+        </div>
+        """, unsafe_allow_html=True)
     
-#     with col4:
-#         st.markdown(f"""
-#         <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-#             <div class="metric-value">5</div>
-#             <div class="metric-label">Material Classes</div>
-#         </div>
-#         """, unsafe_allow_html=True)
+    with col4:
+        st.markdown(f"""
+        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="metric-value">5</div>
+            <div class="metric-label">Material Classes</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 def main():
     """Main application function with modern design."""
@@ -880,13 +885,12 @@ def main():
             # Image metadata
             file_size = len(uploaded_file.getvalue()) / 1024  # KB
             st.markdown(f"""
-            <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding: 0.5rem; background: #f8f9fa; border-radius: 8px;">
-                <span><strong>Size:</strong> {image.size[0]}×{image.size[1]} px</span>
-                <span><strong>Format:</strong> {image.format}</span>
-                <span><strong>File Size:</strong> {file_size:.1f} KB</span>
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+<div style="display: flex; justify-content: space-between; margin-top: 1rem; padding: 0.5rem; background: #f8f9fa; border-radius: 8px; color: #333;">
+    <span><strong>Size:</strong> {image.size[0]}×{image.size[1]} px</span>
+    <span><strong>Format:</strong> {image.format}</span>
+    <span><strong>File Size:</strong> {file_size:.1f} KB</span>
+</div>
+""", unsafe_allow_html=True)
             
             # Processing info
             st.info("🔄 Image will be automatically resized to 256×256 pixels and normalized for optimal processing")
@@ -999,8 +1003,8 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
                     """, unsafe_allow_html=True)
     
     # Dataset overview section
-    # st.markdown("---")
-    # create_dataset_overview()
+    st.markdown("---")
+    create_dataset_overview()
     
     # Training insights
     st.markdown("### 🎓 Training Insights")
