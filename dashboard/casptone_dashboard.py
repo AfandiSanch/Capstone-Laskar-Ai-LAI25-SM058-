@@ -70,14 +70,20 @@ st.markdown("""
         opacity: 0.8;
     }
     
+     /* Better contrast for modern cards */
     .modern-card {
-        background: white;
+        background: white !important;
         border-radius: 15px;
         padding: 1.5rem;
         box-shadow: 0 8px 25px rgba(0,0,0,0.08);
         border: 1px solid rgba(0,0,0,0.05);
         margin-bottom: 1rem;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        color: #2c3e50 !important;
+    }
+    
+    .modern-card h3, .modern-card h4 {
+        color: #2c3e50 !important;
     }
     
     .modern-card:hover {
@@ -134,6 +140,12 @@ st.markdown("""
         opacity: 0.9;
         text-transform: uppercase;
         letter-spacing: 1px;
+    }
+            
+    /* Improved visibility for metric cards text */
+    .metric-card .metric-value,
+    .metric-card .metric-label {
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
     }
     
     .status-success {
@@ -208,13 +220,36 @@ st.markdown("""
         box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
     }
     
+    /* Enhanced contrast for data insight boxes */
     .data-insight {
-        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
         padding: 1.5rem;
         border-radius: 15px;
         margin: 1rem 0;
         border-left: 4px solid #667eea;
-        box-shadow: 0 8px 25px rgba(168, 237, 234, 0.3);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        color: #2c3e50 !important;
+    }
+    
+    .data-insight h4 {
+        color: #667eea !important;
+        margin-top: 0;
+        text-shadow: none !important;
+    }
+    
+    .data-insight ul {
+        color: #2c3e50 !important;
+        margin: 0;
+        padding-left: 1rem;
+    }
+    
+    .data-insight li {
+        color: #2c3e50 !important;
+        margin-bottom: 0.3rem;
+    }
+    
+    .data-insight strong {
+        color: #495057 !important;
     }
     
     .footer-stats {
@@ -646,13 +681,13 @@ def create_prediction_display(predicted_class, confidence, predictions):
     return prob_df
 
 def create_probability_charts(prob_df):
-    """Create modern probability visualization charts with error handling."""
+    """Create modern probability visualization charts with better text contrast."""
     
     col1, col2 = st.columns(2)
     
     with col1:
         try:
-            # Horizontal bar chart with simplified configuration
+            # Horizontal bar chart with better contrast
             fig_bar = go.Figure(data=[
                 go.Bar(
                     y=prob_df['Material'],
@@ -663,34 +698,53 @@ def create_probability_charts(prob_df):
                         line=dict(color='rgba(255,255,255,0.6)', width=2)
                     ),
                     text=[f"{icon} {prob:.1f}%" for icon, prob in zip(prob_df['Icon'], prob_df['Probability'])],
-                    textposition='inside'
+                    textposition='inside',
+                    textfont=dict(color='white', size=14, family='Arial Black')  # Fixed: Better text contrast
                 )
             ])
             
             fig_bar.update_layout(
-                title="🎯 Probability Rankings",
+                title=dict(
+                    text="🎯 Probability Rankings",
+                    font=dict(size=18, color='#2c3e50', family='Arial')  # Fixed: Darker title color
+                ),
                 xaxis_title="Confidence (%)",
                 yaxis_title="Material Type",
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(family='Arial', size=12),
+                font=dict(family='Arial', size=12, color='#2c3e50'),  # Fixed: Darker text color
                 height=350
             )
             
-            fig_bar.update_xaxes(range=[0, 100], showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-            fig_bar.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
+            fig_bar.update_xaxes(
+                range=[0, 100], 
+                showgrid=True, 
+                gridcolor='rgba(0,0,0,0.2)',  # Fixed: Darker grid
+                tickfont=dict(color='#2c3e50')  # Fixed: Darker tick labels
+            )
+            fig_bar.update_yaxes(
+                showgrid=True, 
+                gridcolor='rgba(0,0,0,0.2)',  # Fixed: Darker grid
+                tickfont=dict(color='#2c3e50')  # Fixed: Darker tick labels
+            )
             
             st.plotly_chart(fig_bar, use_container_width=True)
             
         except Exception as e:
             st.error("Error creating bar chart")
-            # Fallback to simple display
+            # Fallback with better styling
+            st.markdown("### 📊 Probability Results")
             for _, row in prob_df.iterrows():
-                st.write(f"{row['Icon']} {row['Material']}: {row['Probability']:.1f}%")
+                st.markdown(f"""
+                <div style="background: white; padding: 0.8rem; margin: 0.5rem 0; border-radius: 8px; 
+                           border-left: 4px solid {row['Color']}; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <strong style="color: #2c3e50;">{row['Icon']} {row['Material']}: {row['Probability']:.1f}%</strong>
+                </div>
+                """, unsafe_allow_html=True)
     
     with col2:
         try:
-            # Modern donut chart with simplified configuration
+            # Modern donut chart with better contrast
             fig_donut = go.Figure(data=[go.Pie(
                 labels=[f"{icon} {material}" for icon, material in zip(prob_df['Icon'], prob_df['Material'])],
                 values=prob_df['Probability'],
@@ -700,18 +754,22 @@ def create_probability_charts(prob_df):
                     line=dict(color='white', width=3)
                 ),
                 textinfo='percent',
-                textposition='outside'
+                textposition='outside',
+                textfont=dict(color='#2c3e50', size=12, family='Arial')  # Fixed: Better text contrast
             )])
             
             fig_donut.update_layout(
-                title="🍰 Confidence Distribution",
+                title=dict(
+                    text="🍰 Confidence Distribution",
+                    font=dict(size=18, color='#2c3e50', family='Arial')  # Fixed: Darker title
+                ),
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(family='Arial', size=12),
+                font=dict(family='Arial', size=12, color='#2c3e50'),  # Fixed: Darker font
                 height=350,
                 showlegend=False,
                 annotations=[dict(
-                    text=f"<b>{prob_df.iloc[0]['Material']}</b><br>{prob_df.iloc[0]['Probability']:.1f}%",
+                    text=f"<b style='color: #2c3e50;'>{prob_df.iloc[0]['Material']}</b><br><span style='color: #2c3e50;'>{prob_df.iloc[0]['Probability']:.1f}%</span>",
                     x=0.5, y=0.5,
                     font_size=16,
                     showarrow=False
@@ -722,15 +780,22 @@ def create_probability_charts(prob_df):
             
         except Exception as e:
             st.error("Error creating donut chart")
-            # Fallback to metric display
-            st.metric(
-                label=f"{prob_df.iloc[0]['Icon']} Top Prediction",
-                value=f"{prob_df.iloc[0]['Material']}",
-                delta=f"{prob_df.iloc[0]['Probability']:.1f}%"
-            )
+            # Fallback to metric display with better styling
+            st.markdown(f"""
+            <div style="background: white; padding: 2rem; border-radius: 15px; text-align: center; 
+                       box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #e1e8ed;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">{prob_df.iloc[0]['Icon']}</div>
+                <div style="font-size: 1.5rem; font-weight: 600; color: #2c3e50; margin-bottom: 0.5rem;">
+                    {prob_df.iloc[0]['Material']}
+                </div>
+                <div style="font-size: 2rem; font-weight: 700; color: {prob_df.iloc[0]['Color']};">
+                    {prob_df.iloc[0]['Probability']:.1f}%
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
 def create_dataset_overview():
-    """Create modern dataset overview section with fixed Plotly configuration."""
+    """Create modern dataset overview section with better text contrast."""
     st.markdown("### 📊 Training Dataset Overview")
     
     # Create dataset visualization
@@ -747,16 +812,17 @@ def create_dataset_overview():
     dataset_df = pd.DataFrame(dataset_data)
     
     try:
-        # Modern grouped bar chart with simplified configuration
+        # Modern grouped bar chart with better text contrast
         fig = go.Figure()
         
         fig.add_trace(go.Bar(
             name='Original Dataset',
             x=dataset_df['Material'],
             y=dataset_df['Original'],
-            marker_color='rgba(102, 126, 234, 0.7)',
+            marker_color='rgba(102, 126, 234, 0.8)',
             text=dataset_df['Original'],
-            textposition='outside'
+            textposition='outside',
+            textfont=dict(color='#2c3e50', size=12)  # Fixed: Better text contrast
         ))
         
         fig.add_trace(go.Bar(
@@ -765,48 +831,82 @@ def create_dataset_overview():
             y=dataset_df['Training'],
             marker_color=dataset_df['Color'].tolist(),
             text=dataset_df['Training'],
-            textposition='outside'
+            textposition='outside',
+            textfont=dict(color='#2c3e50', size=12)  # Fixed: Better text contrast
         ))
         
-        # Simplified layout configuration to avoid errors
+        # Better layout with improved contrast
         fig.update_layout(
-            title="📈 Dataset Distribution: Original vs Training Split",
-            xaxis_title="Material Types",
-            yaxis_title="Number of Images",
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            title=dict(
+                text="📈 Dataset Distribution: Original vs Training Split",
+                font=dict(size=20, color='#2c3e50', family='Arial')  # Fixed: Darker title
+            ),
+            xaxis_title=dict(
+                text="Material Types",
+                font=dict(color='#2c3e50')  # Fixed: Darker axis title
+            ),
+            yaxis_title=dict(
+                text="Number of Images", 
+                font=dict(color='#2c3e50')  # Fixed: Darker axis title
+            ),
+            plot_bgcolor='rgba(255,255,255,0.9)',  # Fixed: Light background for better contrast
+            paper_bgcolor='rgba(255,255,255,0.9)',  # Fixed: Light background
             barmode='group',
             height=400,
-            font=dict(family='Arial', size=12),
+            font=dict(family='Arial', size=12, color='#2c3e50'),  # Fixed: Darker font
             showlegend=True,
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=1
+                x=1,
+                font=dict(color='#2c3e50')  # Fixed: Darker legend text
             )
         )
         
-        # Update axis properties separately to avoid conflicts
+        # Update axis properties with better contrast
         fig.update_xaxes(
-            gridcolor='rgba(0,0,0,0.1)',
-            showgrid=True
+            gridcolor='rgba(0,0,0,0.2)',  # Fixed: Darker grid
+            showgrid=True,
+            tickfont=dict(color='#2c3e50')  # Fixed: Darker tick labels
         )
         
         fig.update_yaxes(
-            gridcolor='rgba(0,0,0,0.1)',
-            showgrid=True
+            gridcolor='rgba(0,0,0,0.2)',  # Fixed: Darker grid
+            showgrid=True,
+            tickfont=dict(color='#2c3e50')  # Fixed: Darker tick labels
         )
         
         st.plotly_chart(fig, use_container_width=True)
         
     except Exception as e:
         st.error(f"Error creating chart: {str(e)}")
-        # Fallback to simple table if chart fails
-        st.dataframe(dataset_df[['Material', 'Original', 'Training']], use_container_width=True)
+        # Fallback with better styling
+        st.markdown("""
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; 
+                   box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 1rem 0;">
+        """, unsafe_allow_html=True)
+        
+        # Create a simple table with better styling
+        for _, row in dataset_df.iterrows():
+            st.markdown(f"""
+            <div style="display: flex; justify-content: space-between; align-items: center; 
+                       padding: 0.8rem; margin: 0.5rem 0; background: #f8f9fa; 
+                       border-radius: 8px; border-left: 4px solid {row['Color']};">
+                <span style="font-weight: 600; color: #2c3e50;">
+                    {row['Icon']} {row['Material']}
+                </span>
+                <div style="color: #2c3e50;">
+                    <span style="margin-right: 1rem;"><strong>Original:</strong> {row['Original']}</span>
+                    <span><strong>Training:</strong> {row['Training']}</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    # Dataset insights cards
+    # Dataset insights cards with better contrast
     col1, col2, col3, col4 = st.columns(4)
     
     total_original = sum(info['original_count'] for info in CLASS_INFO.values())
@@ -814,33 +914,41 @@ def create_dataset_overview():
     
     with col1:
         st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-value">{total_original:,}</div>
-            <div class="metric-label">Original Images</div>
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                   color: white; padding: 1.5rem; border-radius: 15px; text-align: center; 
+                   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);">
+            <div style="font-size: 2rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">{total_original:,}</div>
+            <div style="font-size: 0.9rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Original Images</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown(f"""
-        <div class="metric-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-            <div class="metric-value">{total_training:,}</div>
-            <div class="metric-label">Training Images</div>
+        <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); 
+                   color: white; padding: 1.5rem; border-radius: 15px; text-align: center; 
+                   box-shadow: 0 8px 25px rgba(17, 153, 142, 0.3);">
+            <div style="font-size: 2rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">{total_training:,}</div>
+            <div style="font-size: 0.9rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Training Images</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
         st.markdown(f"""
-        <div class="metric-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-            <div class="metric-value">80/20</div>
-            <div class="metric-label">Train/Test Split</div>
+        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); 
+                   color: white; padding: 1.5rem; border-radius: 15px; text-align: center; 
+                   box-shadow: 0 8px 25px rgba(250, 112, 154, 0.3);">
+            <div style="font-size: 2rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">80/20</div>
+            <div style="font-size: 0.9rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Train/Test Split</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col4:
         st.markdown(f"""
-        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <div class="metric-value">5</div>
-            <div class="metric-label">Material Classes</div>
+        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
+                   color: white; padding: 1.5rem; border-radius: 15px; text-align: center; 
+                   box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);">
+            <div style="font-size: 2rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">5</div>
+            <div style="font-size: 0.9rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Material Classes</div>
         </div>
         """, unsafe_allow_html=True)
 
