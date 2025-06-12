@@ -63,3 +63,30 @@ Model CNN mampu mengenali gambar dengan cukup baik di beberapa kelas, tetapi ter
 - Matplotlib, Seaborn
 - scikit-learn
 - OpenCV, skimage
+
+---
+
+# Panduan Penggunaan Aplikasi EcoSense
+
+## Deskripsi aplikasi EcoSense
+Sebagai tindak lanjut dari pengembangan proyek capstone terwujudkanlah sebuah aplikasi dashboard berbasis streamlit. EcoSense – Solusi Klasifikasi dan Edukasi Sampah Cerdas, Memilah sampah dengan kecerdasan buatan, menyelamatkan bumi bersama, merupakan nama aplikasi yang dijadikan proyek. Sebuah aplikasi yang dapat mengklasifikasikan gambar sampah dengan model yang telah dilatih sebelumnya. Dengan menggunakan basis streamlit model yang sebelumnya sudah dilatih dan dikembangkan dapat diintegrasikan sehingga masyarakat dapat menggunakannya melalui browser.
+
+## Alur penggunaan aplikasi EcoSense
+Pengguna dapat mengakses aplikasi EcoSense pada link: https://capstone-lai25-sm058.streamlit.app/ , berikut alur penggunaan:
+- Pengguna mengunggah gambar pada kolom input berkas
+- Aplikasi menampilkan output klasifikasi gambar sampah
+- Pengguna melihat informasi mengenai hasil klasifikasi dan informasi mengenai objek sampah yang dikenali
+
+## Panduan penggunaan aplikasi EcoSense
+- Pertama pengguna dapat mengakses aplikasi EcoSense pada link: https://capstone-lai25-sm058.streamlit.app/ dengan menggunakan browser
+- Setelah pengguna berhasil mengunjungi aplikasi, pengguna dapat melihat tampilan atau dashboard dari aplikasi EcoSense
+- Pengguna dapat mengunggah berkas gambar yang berisi objek sampah pada kolom upload berkas yang tersedia pada halaman aplikasi / dashboard
+- Pengguna dapat menggunakan berkas gambar beresolusi 384x512 pixel untuk hasil yang maksimal
+- Ketentuan berkas gambar merupakan berkas yang berekstensi PNG, JPG, JPEG dengan maksimal ukuran berkas 200MB
+- Pastikan objek pada berkas gambar terlihat jelas tidak blur, tegak lurus, berlatar belakang bersih atau tidak ada objek lain atau latar belakang rumit
+- Saat ini aplikasi hanya mampu mengenali gambar objek sampah yang terdiri objek dari kardus, kaca, logam, kertas, plastik
+- Setelah pengguna berhasil mengunggah berkas gambar pada aplikasi, aplikasi akan memproses gambar tersebut lalu mengidentifikasi / klasifikasi objek dengan model yang sudah dihasilkan
+- Untuk penggunaan aplikasi atau dashboard EcoSense untuk pertama kalinya mungkin akan memakan waktu cukup lama untuk proses load berkas model dan proses load model akan berlangsung satu kali saja saat pengguna melakukan percobaan penggunaan aplikasi pertama kali
+- Jika aplikasi berhasil mengidentifikasi objek sampah dari berkas gambar yang pengguna unggah, maka aplikasi EcoSense akan menampilkan informasi mengenai kategori objek sampah seperti pengkategorian objek sampah, tips dalam menyimpan atau memperlakukan sampah, dan probabilitas aplikasi EcoSense mengklasifikasi objek
+- Jika pengguna ingin mengunggah berkas gambar lainnya, pengguna dapat menekan tombol "Clear Results" atau tombol "X" atau close, lalu menekan tombol "browse file"
+- Pada aplikasi EcoSense ini juga terdapat informasi tambahan mengenai dataset yang digunakan, informasi mengenai model yang digunakan, dan data preprocessing
