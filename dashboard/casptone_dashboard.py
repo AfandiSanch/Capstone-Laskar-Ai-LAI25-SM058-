@@ -38,7 +38,6 @@ st.markdown("""
         padding: 2rem;
         margin: 1rem;
         box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        color: #2c3e50; /* --- PERUBAHAN: Menetapkan warna teks default yang gelap untuk semua konten utama --- */
     }
     
     .hero-header {
@@ -79,7 +78,6 @@ st.markdown("""
         border: 1px solid rgba(0,0,0,0.05);
         margin-bottom: 1rem;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        color: #333; /* --- PERUBAHAN: Memastikan teks di kartu putih selalu gelap --- */
     }
     
     .modern-card:hover {
@@ -166,7 +164,6 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
         margin: 1rem 0;
         transition: all 0.3s ease;
-        color: #2c3e50; /* --- PERUBAHAN: Menetapkan warna teks gelap untuk area upload --- */
     }
     
     .upload-area:hover {
@@ -218,7 +215,6 @@ st.markdown("""
         margin: 1rem 0;
         border-left: 4px solid #667eea;
         box-shadow: 0 8px 25px rgba(168, 237, 234, 0.3);
-        color: #2c3e50; /* --- PERUBAHAN: Ini sangat penting, karena background sangat terang --- */
     }
     
     .footer-stats {
@@ -264,6 +260,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Initialize session state
+if 'prediction_made' not in st.session_state:
+    st.session_state.prediction_made = False
+if 'prob_df' not in st.session_state:
+    st.session_state.prob_df = None
+if 'predictions' not in st.session_state:
+    st.session_state.predictions = None
 
 def download_model_from_gdrive():
     """Download model from Google Drive using multiple methods."""
@@ -643,90 +646,91 @@ def create_prediction_display(predicted_class, confidence, predictions):
     return prob_df
 
 def create_probability_charts(prob_df):
-    """Create modern probability visualization charts."""
+    """Create modern probability visualization charts with error handling."""
     
     col1, col2 = st.columns(2)
     
     with col1:
-        # Horizontal bar chart
-        fig_bar = go.Figure(data=[
-            go.Bar(
-                y=prob_df['Material'],
-                x=prob_df['Probability'],
-                orientation='h',
-                marker=dict(
-                    color=prob_df['Color'],
-                    line=dict(color='rgba(255,255,255,0.6)', width=2)
-                ),
-                text=[f"{icon} {prob:.1f}%" for icon, prob in zip(prob_df['Icon'], prob_df['Probability'])],
-                textposition='inside',
-                textfont=dict(color='white', size=12, family='Inter')
+        try:
+            # Horizontal bar chart with simplified configuration
+            fig_bar = go.Figure(data=[
+                go.Bar(
+                    y=prob_df['Material'],
+                    x=prob_df['Probability'],
+                    orientation='h',
+                    marker=dict(
+                        color=prob_df['Color'].tolist(),
+                        line=dict(color='rgba(255,255,255,0.6)', width=2)
+                    ),
+                    text=[f"{icon} {prob:.1f}%" for icon, prob in zip(prob_df['Icon'], prob_df['Probability'])],
+                    textposition='inside'
+                )
+            ])
+            
+            fig_bar.update_layout(
+                title="🎯 Probability Rankings",
+                xaxis_title="Confidence (%)",
+                yaxis_title="Material Type",
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(family='Arial', size=12),
+                height=350
             )
-        ])
-        
-        fig_bar.update_layout(
-            title=dict(
-                text="🎯 Probability Rankings",
-                font=dict(size=18, family='Inter', color='#2c3e50')
-            ),
-            xaxis=dict(
-                title="Confidence (%)",
-                range=[0, 100],
-                gridcolor='rgba(0,0,0,0.1)',
-                showgrid=True
-            ),
-            yaxis=dict(
-                title="Material Type",
-                gridcolor='rgba(0,0,0,0.1)'
-            ),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Inter'),
-            height=350
-        )
-        
-        st.plotly_chart(fig_bar, use_container_width=True)
+            
+            fig_bar.update_xaxes(range=[0, 100], showgrid=True, gridcolor='rgba(0,0,0,0.1)')
+            fig_bar.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
+            
+            st.plotly_chart(fig_bar, use_container_width=True)
+            
+        except Exception as e:
+            st.error("Error creating bar chart")
+            # Fallback to simple display
+            for _, row in prob_df.iterrows():
+                st.write(f"{row['Icon']} {row['Material']}: {row['Probability']:.1f}%")
     
     with col2:
-        # Modern donut chart
-        fig_donut = go.Figure(data=[go.Pie(
-            labels=[f"{icon} {material}" for icon, material in zip(prob_df['Icon'], prob_df['Material'])],
-            values=prob_df['Probability'],
-            hole=.6,
-            marker=dict(
-                colors=prob_df['Color'],
-                line=dict(color='white', width=3)
-            ),
-            textinfo='percent',
-            textposition='outside',
-            textfont=dict(size=12, family='Inter'),
-            hovertemplate='<b>%{label}</b><br>Confidence: %{value:.1f}%<extra></extra>'
-        )])
-        
-        fig_donut.update_layout(
-            title=dict(
-                text="🍰 Confidence Distribution",
-                font=dict(size=18, family='Inter', color='#2c3e50')
-            ),
-            annotations=[dict(
-                text=f"<b>{prob_df.iloc[0]['Material']}</b><br>{prob_df.iloc[0]['Probability']:.1f}%",
-                x=0.5, y=0.5,
-                font_size=16,
-                font_family='Inter',
-                font_color='#2c3e50',
-                showarrow=False
-            )],
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Inter'),
-            height=350,
-            showlegend=False
-        )
-        
-        st.plotly_chart(fig_donut, use_container_width=True)
+        try:
+            # Modern donut chart with simplified configuration
+            fig_donut = go.Figure(data=[go.Pie(
+                labels=[f"{icon} {material}" for icon, material in zip(prob_df['Icon'], prob_df['Material'])],
+                values=prob_df['Probability'],
+                hole=.6,
+                marker=dict(
+                    colors=prob_df['Color'].tolist(),
+                    line=dict(color='white', width=3)
+                ),
+                textinfo='percent',
+                textposition='outside'
+            )])
+            
+            fig_donut.update_layout(
+                title="🍰 Confidence Distribution",
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(family='Arial', size=12),
+                height=350,
+                showlegend=False,
+                annotations=[dict(
+                    text=f"<b>{prob_df.iloc[0]['Material']}</b><br>{prob_df.iloc[0]['Probability']:.1f}%",
+                    x=0.5, y=0.5,
+                    font_size=16,
+                    showarrow=False
+                )]
+            )
+            
+            st.plotly_chart(fig_donut, use_container_width=True)
+            
+        except Exception as e:
+            st.error("Error creating donut chart")
+            # Fallback to metric display
+            st.metric(
+                label=f"{prob_df.iloc[0]['Icon']} Top Prediction",
+                value=f"{prob_df.iloc[0]['Material']}",
+                delta=f"{prob_df.iloc[0]['Probability']:.1f}%"
+            )
 
 def create_dataset_overview():
-    """Create modern dataset overview section."""
+    """Create modern dataset overview section with fixed Plotly configuration."""
     st.markdown("### 📊 Training Dataset Overview")
     
     # Create dataset visualization
@@ -742,58 +746,65 @@ def create_dataset_overview():
     
     dataset_df = pd.DataFrame(dataset_data)
     
-    # Modern grouped bar chart
-    fig = go.Figure()
-    
-    fig.add_trace(go.Bar(
-        name='Original Dataset',
-        x=dataset_df['Material'],
-        y=dataset_df['Original'],
-        marker_color='rgba(102, 126, 234, 0.7)',
-        text=dataset_df['Original'],
-        textposition='outside'
-    ))
-    
-    fig.add_trace(go.Bar(
-        name='Training Set',
-        x=dataset_df['Material'],
-        y=dataset_df['Training'],
-        marker_color=[color for color in dataset_df['Color']],
-        text=dataset_df['Training'],
-        textposition='outside'
-    ))
-    
-    fig.update_layout(
-        title=dict(
-            text="📈 Dataset Distribution: Original vs Training Split",
-            font=dict(size=20, family='Inter', color='#2c3e50')
-        ),
-        xaxis=dict(
-            title="Material Types",
-            titlefont=dict(size=14, family='Inter'),
-            tickfont=dict(size=12, family='Inter')
-        ),
-        yaxis=dict(
-            title="Number of Images",
-            titlefont=dict(size=14, family='Inter'),
-            tickfont=dict(size=12, family='Inter'),
-            gridcolor='rgba(0,0,0,0.1)'
-        ),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(family='Inter'),
-        barmode='group',
-        height=400,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
+    try:
+        # Modern grouped bar chart with simplified configuration
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+            name='Original Dataset',
+            x=dataset_df['Material'],
+            y=dataset_df['Original'],
+            marker_color='rgba(102, 126, 234, 0.7)',
+            text=dataset_df['Original'],
+            textposition='outside'
+        ))
+        
+        fig.add_trace(go.Bar(
+            name='Training Set',
+            x=dataset_df['Material'],
+            y=dataset_df['Training'],
+            marker_color=dataset_df['Color'].tolist(),
+            text=dataset_df['Training'],
+            textposition='outside'
+        ))
+        
+        # Simplified layout configuration to avoid errors
+        fig.update_layout(
+            title="📈 Dataset Distribution: Original vs Training Split",
+            xaxis_title="Material Types",
+            yaxis_title="Number of Images",
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            barmode='group',
+            height=400,
+            font=dict(family='Arial', size=12),
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            )
         )
-    )
-    
-    st.plotly_chart(fig, use_container_width=True)
+        
+        # Update axis properties separately to avoid conflicts
+        fig.update_xaxes(
+            gridcolor='rgba(0,0,0,0.1)',
+            showgrid=True
+        )
+        
+        fig.update_yaxes(
+            gridcolor='rgba(0,0,0,0.1)',
+            showgrid=True
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+    except Exception as e:
+        st.error(f"Error creating chart: {str(e)}")
+        # Fallback to simple table if chart fails
+        st.dataframe(dataset_df[['Material', 'Original', 'Training']], use_container_width=True)
     
     # Dataset insights cards
     col1, col2, col3, col4 = st.columns(4)
@@ -834,7 +845,7 @@ def create_dataset_overview():
         """, unsafe_allow_html=True)
 
 def main():
-    """Main application function with modern design."""
+    """Main application function with modern design and improved error handling."""
     
     # Hero Section
     st.markdown("""
@@ -876,61 +887,79 @@ def main():
         )
         
         if uploaded_file is not None:
-            # Display uploaded image with modern styling
-            image = Image.open(uploaded_file)
-            
-            st.markdown('<div class="modern-card">', unsafe_allow_html=True)
-            st.image(image, caption="📷 Uploaded Image", use_column_width=True)
-            
-            # Image metadata
-            file_size = len(uploaded_file.getvalue()) / 1024  # KB
-            st.markdown(f"""
-<div style="display: flex; justify-content: space-between; margin-top: 1rem; padding: 0.5rem; background: #f8f9fa; border-radius: 8px; color: #333;">
-    <span><strong>Size:</strong> {image.size[0]}×{image.size[1]} px</span>
-    <span><strong>Format:</strong> {image.format}</span>
-    <span><strong>File Size:</strong> {file_size:.1f} KB</span>
-</div>
-""", unsafe_allow_html=True)
-            
-            # Processing info
-            st.info("🔄 Image will be automatically resized to 256×256 pixels and normalized for optimal processing")
+            try:
+                # Display uploaded image with modern styling
+                image = Image.open(uploaded_file)
+                
+                st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+                st.image(image, caption="📷 Uploaded Image", use_column_width=True)
+                
+                # Image metadata
+                file_size = len(uploaded_file.getvalue()) / 1024  # KB
+                st.markdown(f"""
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding: 0.5rem; background: #f8f9fa; border-radius: 8px;">
+                    <span><strong>Size:</strong> {image.size[0]}×{image.size[1]} px</span>
+                    <span><strong>Format:</strong> {image.format or 'Unknown'}</span>
+                    <span><strong>File Size:</strong> {file_size:.1f} KB</span>
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Processing info
+                st.info("🔄 Image will be automatically resized to 256×256 pixels and normalized for optimal processing")
+                
+            except Exception as e:
+                st.error(f"Error loading image: {str(e)}")
+                uploaded_file = None
     
     with col2:
         if uploaded_file is not None:
-            # Load model and make prediction
-            with st.spinner("🧠 Loading model..."):
-                model = load_model()
-            
-            if model is not None:
-                # Show model debug info if enabled
-                if debug_mode:
-                    with st.expander("🔍 Model Architecture Details"):
-                        st.code(f"""
+            try:
+                # Load model and make prediction
+                with st.spinner("🧠 Loading model..."):
+                    model = load_model()
+                
+                if model is not None:
+                    # Show model debug info if enabled
+                    if debug_mode:
+                        with st.expander("🔍 Model Architecture Details"):
+                            try:
+                                st.code(f"""
 Model Input Shape: {model.input_shape}
 Model Output Shape: {model.output_shape}
 Total Parameters: {model.count_params():,}
 Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trainable_weights]):,}
 """)
-                
-                # Make prediction
-                with st.spinner("🤖 Analyzing image with AI..."):
-                    processed_image = preprocess_image(image)
-                    predictions = predict_image(model, processed_image)
-                
-                if predictions is not None:
-                    # Ensure we have the right number of predictions
-                    if len(predictions) >= len(CLASS_NAMES):
-                        predictions = predictions[:len(CLASS_NAMES)]
+                            except Exception as debug_error:
+                                st.error(f"Debug info error: {debug_error}")
                     
-                    # Get top prediction
-                    predicted_class_idx = np.argmax(predictions)
-                    predicted_class = CLASS_NAMES[predicted_class_idx]
-                    confidence = predictions[predicted_class_idx] * 100
+                    # Make prediction
+                    with st.spinner("🤖 Analyzing image with AI..."):
+                        processed_image = preprocess_image(image)
+                        predictions = predict_image(model, processed_image)
                     
-                    # Display prediction result
-                    prob_df = create_prediction_display(predicted_class, confidence, predictions)
-            else:
-                st.error("❌ Could not load the model. Please check the model file.")
+                    if predictions is not None:
+                        # Ensure we have the right number of predictions
+                        if len(predictions) >= len(CLASS_NAMES):
+                            predictions = predictions[:len(CLASS_NAMES)]
+                        
+                        # Get top prediction
+                        predicted_class_idx = np.argmax(predictions)
+                        predicted_class = CLASS_NAMES[predicted_class_idx]
+                        confidence = predictions[predicted_class_idx] * 100
+                        
+                        # Display prediction result
+                        prob_df = create_prediction_display(predicted_class, confidence, predictions)
+                        
+                        # Store results for later use
+                        st.session_state['prediction_made'] = True
+                        st.session_state['prob_df'] = prob_df
+                        st.session_state['predictions'] = predictions
+                else:
+                    st.error("❌ Could not load the model. Please check the model file.")
+                    
+            except Exception as e:
+                st.error(f"Error during prediction: {str(e)}")
         else:
             # Welcome message when no image is uploaded
             st.markdown("""
@@ -951,60 +980,37 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
             """, unsafe_allow_html=True)
     
     # Results section (only show if prediction was made)
-    if uploaded_file is not None and 'predictions' in locals() and predictions is not None:
-        st.markdown("---")
-        st.markdown("## 📊 Detailed Analysis Results")
-        
-        # Create probability charts
-        create_probability_charts(prob_df)
-        
-        # Detailed breakdown with expandable cards
-        st.markdown("### 🔍 Classification Details")
-        
-        sorted_indices = np.argsort(predictions)[::-1]
-        
-        for rank, idx in enumerate(sorted_indices):
-            class_name = CLASS_NAMES[idx]
-            prob = predictions[idx]
-            class_info = CLASS_INFO[class_name]
+    if st.session_state.get('prediction_made', False):
+        try:
+            st.markdown("---")
+            st.markdown("## 📊 Detailed Analysis Results")
             
-            # Color coding based on rank
-            border_color = "#FFD700" if rank == 0 else "#C0C0C0" if rank == 1 else "#CD7F32" if rank == 2 else "#E0E0E0"
+            # Create probability charts
+            create_probability_charts(st.session_state['prob_df'])
             
-            with st.expander(f"#{rank+1} {class_info['icon']} {class_name.title()} - {prob*100:.2f}% confidence"):
-                col_a, col_b = st.columns([1, 2])
+            # Reset session state for next prediction
+            if st.button("🔄 Clear Results"):
+                for key in ['prediction_made', 'prob_df', 'predictions']:
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.rerun()
                 
-                with col_a:
-                    st.markdown(f"""
-                    <div class="modern-card" style="border-left: 4px solid {border_color};">
-                        <div style="text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">{class_info['icon']}</div>
-                            <div style="font-size: 1.5rem; font-weight: 700; color: {class_info['color']};">
-                                {prob*100:.2f}%
-                            </div>
-                            <div style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
-                                Rank #{rank+1}
-                            </div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with col_b:
-                    st.markdown(f"""
-                    <div class="modern-card">
-                        <h4 style="color: {class_info['color']}; margin-top: 0;">{class_name.title()} Details</h4>
-                        <p><strong>Description:</strong> {class_info['description']}</p>
-                        <p><strong>Recycling Tip:</strong> {class_info['tips']}</p>
-                        <p><strong>Training Data:</strong> {class_info['final_count']} images used for training</p>
-                        <div class="progress-container">
-                            <div class="progress-bar" style="width: {prob*100}%; background: {class_info['color']};"></div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Error displaying results: {str(e)}")
     
-    # Dataset overview section
-    st.markdown("---")
-    create_dataset_overview()
+    # Dataset overview section with error handling
+    try:
+        st.markdown("---")
+        create_dataset_overview()
+    except Exception as e:
+        st.error("Error loading dataset overview")
+        # Fallback simple stats
+        st.markdown("### 📊 Dataset Summary")
+        total_images = sum(info['final_count'] for info in CLASS_INFO.values())
+        st.write(f"Total Training Images: {total_images:,}")
+        st.write("Material Classes: 5 (Cardboard, Glass, Metal, Paper, Plastic)")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Training insights
     st.markdown("### 🎓 Training Insights")
@@ -1043,7 +1049,7 @@ Trainable Parameters: {sum([tf.keras.backend.count_params(w) for w in model.trai
     
     st.markdown('</div>', unsafe_allow_html=True)  # Close main-container
     
-    # Footer with modern styling
+# Footer with modern styling
     st.markdown("""
     <div class="footer-stats">
         <h3 style="margin-top: 0;">🌱 Making Recycling Smarter with AI</h3>
